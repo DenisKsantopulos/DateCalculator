@@ -4,6 +4,17 @@ $(document).ready(function() {
 
     $input.on('input', function() {
         const originalDateStr = $input.val();
+        
+        const dayMonthRegex = /^\d{2}$/;
+        const monthRegex = /^\d{2}\.\d{2}$/;
+
+        if (dayMonthRegex.test(originalDateStr)) {
+            $input.val(originalDateStr + '.');
+            return;
+        } else if (monthRegex.test(originalDateStr)) {
+            $input.val(originalDateStr + '.');
+            return;
+        }
 
         const [month, day, year] = originalDateStr.split(".");
         const dateStr = `${day}.${month}.${year}`;
@@ -19,7 +30,7 @@ $(document).ready(function() {
         }
 
         // console.log(dateStr)
-        const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
+        const dateRegex = /^\d{2}\.\d{2}\.\d+$/;
         if (!dateRegex.test(dateStr)) {
             $result.text('Некорректный формат даты');
             return;
@@ -38,6 +49,50 @@ $(document).ready(function() {
             return;
         }
 
+        const dayOfYear = getDayOfYear(date);
+        const weekOfYear = getWeekOfYear(date);
+        const distanceToToday = getDistanceToToday(date);
+
+        $result.html(`
+            <p>Номер дня в году: ${dayOfYear}</p>
+            <p>Номер недели в году: ${weekOfYear}</p>
+            <p>Расстояние до текущего дня: ${distanceToToday}</p>
+        `);
     });
+
+    function getDayOfYear(date) {
+        const startOfYear = new Date(date.getFullYear(), 0, 1); // введенный год, 1 месяц, 1 день
+        return Math.floor((date.getTime() - startOfYear.getTime()) / 86400000) + 1;
+    }
+
+    function getWeekOfYear(date) {
+        const startOfYear = new Date(date.getFullYear(), 0, 1);
+        const week = Math.floor((date.getTime() - startOfYear.getTime()) / 604800000) + 1;
+        return week;
+    }
+
+    function getDistanceToToday(date) {
+        const now = new Date();
+        const distance = date.getTime() - now.getTime();
+        const years = Math.floor(distance / 31536000000);
+        const days = Math.floor((distance % 31536000000) / 86400000);
+        const hours = Math.floor((distance % 86400000) / 3600000);
+        const minutes = Math.floor((distance % 3600000) / 60000);
+        const seconds = Math.floor((distance % 60000) / 1000);
+
+        return `${years} лет ${days} дней ${hours} часов ${minutes} минут ${seconds} секунд`;
+    }
+
+    setInterval(function() {
+        const originalDateStr = $input.val();
+
+        const [month, day, year] = originalDateStr.split(".");
+        const dateStr = `${day}.${month}.${year}`;
+        if (dateStr) {
+            const date = new Date(dateStr.replace(/\./g, '/'));
+            const distanceToToday = getDistanceToToday(date);
+            $result.find('p:last-child').text(`Расстояние до текущего дня: ${distanceToToday}`);
+        }
+    }, 1000);
 
 });
