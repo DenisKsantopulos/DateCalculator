@@ -10,6 +10,7 @@ $(document).ready(function() {
             $result.text('');
             return;
         }
+
         if (originalDateStr.length < lastValue.length) {
             lastValue = originalDateStr;
             return;
@@ -28,7 +29,7 @@ $(document).ready(function() {
             return;
         }
 
-        lastValue = originalDateStr;
+        //lastValue = originalDateStr;
 
         const [month, day, year] = originalDateStr.split(".");
         const dateStr = `${day}.${month}.${year}`;
