@@ -2,19 +2,33 @@ $(document).ready(function() {
     const $input = $('#date-input');
     const $result = $('#result');
 
+    let lastValue = '';
+
     $input.on('input', function() {
         const originalDateStr = $input.val();
-        
+        if (originalDateStr === '') {
+            $result.text('');
+            return;
+        }
+        if (originalDateStr.length < lastValue.length) {
+            lastValue = originalDateStr;
+            return;
+        }
+
         const dayMonthRegex = /^\d{2}$/;
         const monthRegex = /^\d{2}\.\d{2}$/;
 
         if (dayMonthRegex.test(originalDateStr)) {
             $input.val(originalDateStr + '.');
+            lastValue = originalDateStr + '.';
             return;
         } else if (monthRegex.test(originalDateStr)) {
             $input.val(originalDateStr + '.');
+            lastValue = originalDateStr + '.';
             return;
         }
+
+        lastValue = originalDateStr;
 
         const [month, day, year] = originalDateStr.split(".");
         const dateStr = `${day}.${month}.${year}`;
@@ -29,7 +43,6 @@ $(document).ready(function() {
             return;
         }
 
-        // console.log(dateStr)
         const dateRegex = /^\d{2}\.\d{2}\.\d+$/;
         if (!dateRegex.test(dateStr)) {
             $result.text('Некорректный формат даты');
@@ -37,7 +50,6 @@ $(document).ready(function() {
         }
 
         const date = new Date(dateStr); //.replace(/\./g, '/')
-        // console.log(date)
         if (date.getTime() < Date.now()) {
             $result.text('Введённая дата уже наступила');
             return;
@@ -67,9 +79,16 @@ $(document).ready(function() {
 
     function getWeekOfYear(date) {
         const startOfYear = new Date(date.getFullYear(), 0, 1);
-        const week = Math.floor((date.getTime() - startOfYear.getTime()) / 604800000) + 1;
+        const firstDayOfYear = startOfYear.getDay(); // get the day of the week of the first day of the year (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+      
+        // adjust the start of the year to the first Monday of the year
+        if (firstDayOfYear !== 1) { // 1 = Monday
+          startOfYear.setDate(startOfYear.getDate() + (7 - firstDayOfYear + 1));
+        }
+      
+        const week = Math.floor((date.getTime() - startOfYear.getTime()) / 604800000) + 2;
         return week;
-    }
+      }
 
     function getDistanceToToday(date) {
         const now = new Date();
